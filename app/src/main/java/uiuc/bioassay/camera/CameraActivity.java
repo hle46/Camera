@@ -560,6 +560,15 @@ public class CameraActivity extends AppCompatActivity implements
         // Set iso
         params.set("iso", String.valueOf("100"));
 
+        // lock auto exposure
+        if (params.isAutoExposureLockSupported()) {
+            params.setAutoExposureLock(true);
+        }
+
+        // lock auto white balance
+        if (params.isAutoWhiteBalanceLockSupported()) {
+            params.setAutoWhiteBalanceLock(true);
+        }
 
         // Write
         mCamera.setParameters(params);
