@@ -2,7 +2,7 @@
  * University of Illinois
  Open Source License
 
- Copyright © <2015>, <University of Illinois at Urbana-Champaign>. All rights reserved.
+ Copyright <2015>, <University of Illinois at Urbana-Champaign>. All rights reserved.
  All rights reserved.
 
  Developed by:
@@ -46,6 +46,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.media.MediaActionSound;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -65,6 +66,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Camera mCamera;
     private boolean focusOnTouch;
     private FocusSound focusSound;
+
+    private TouchRectView touchRectView = null;
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
@@ -187,9 +190,33 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
 
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            Rect focusRect = calculateTapArea(event.getRawX(), event.getRawY(), 1f);
-            Rect meteringRect = calculateTapArea(event.getRawX(), event.getRawY(), 1.5f);
+            float x = event.getRawX();
+            float y = event.getRawY();
+            Rect focusRect = calculateTapArea(x, y, 1f);
+            Rect meteringRect = calculateTapArea(event.getRawX(), event.getRawY(), 1.8f);
             doTouchFocus(focusRect, meteringRect);
+
+            final Rect touchRect = new Rect(
+                    (int)(x - 50),
+                    (int)(y - 50),
+                    (int)(x + 50),
+                    (int)(y + 50));
+            if (touchRectView != null) {
+                touchRectView.setRect(touchRect);
+                touchRectView.invalidate();
+
+                // Remove the square after some time
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        touchRectView.setRect(new Rect(0, 0, 0, 0));
+                        touchRectView.invalidate();
+                    }
+                }, 1000);
+            }
+
         }
         return false;
     }
@@ -203,11 +230,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
      * Convert x, y touch position position -1000:-1000 to 1000:1000.
      */
     private Rect calculateTapArea(float x, float y, float coefficient) {
-        float focusAreaSize = 300;
+        float focusAreaSize = 200;
         int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
 
-        int centerX = (int) (x / getResolution().width * 2000 - 1000);
-        int centerY = (int) (y / getResolution().height * 2000 - 1000);
+        int centerX = (int) ((x / getWidth()) * 2000 - 1000);
+        int centerY = (int) ((y / getHeight()) * 2000 - 1000);
 
         int left = clamp(centerX - areaSize / 2, -1000, 1000);
         int right = clamp(left + areaSize, -1000, 1000);
@@ -239,5 +266,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         public void play() {
             media.play(MediaActionSound.FOCUS_COMPLETE);
         }
+    }
+
+
+    public void setTouchRectView(TouchRectView touchRectView) {
+        this.touchRectView = touchRectView;
     }
 }

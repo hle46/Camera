@@ -188,6 +188,9 @@ public class CameraActivity extends AppCompatActivity implements
                 }
         );
 
+        TouchRectView touchRectView = (TouchRectView) findViewById(R.id.touch_rect);
+        mPreview.setTouchRectView(touchRectView);
+
         mLastUpdateTime = "";
 
         // Update values using data stored in the Bundle.
@@ -546,7 +549,7 @@ public class CameraActivity extends AppCompatActivity implements
         params.setJpegQuality(100);
 
         // Set focus mode
-        params.setFocusMode(Camera.Parameters.FOCUS_MODE_MACRO);
+        params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
 
         // Set exposure offset
         params.setExposureCompensation(0);
